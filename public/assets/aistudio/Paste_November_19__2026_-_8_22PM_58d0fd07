@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robi WiFi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    .hidden-page { display: none !important; }
+
+    /* Invoice Sheet Styling (Exact A4 width 794px) */
+    .invoice-sheet {
+      width: 794px;
+      min-height: 1050px;
+      margin: 0 auto;
+      background: #ffffff;
+      color: #111827;
+      padding: 32px 38px;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+      position: relative;
+      border: 1px solid #d1d5db;
+    }
+    .inv-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .inv-logo-mark {
+      width: 74px;
+      height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .inv-completed-badge {
+      color: #16a34a;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 3px;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      margin-top: 6px;
+      line-height: 1;
+      display: inline-block;
+    }
+    .inv-header-right {
+      text-align: right;
+      line-height: 1.25;
+    }
+    .inv-title {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #000000;
+    }
+    .inv-brand {
+      font-size: 16px;
+      font-weight: 800;
+      color: #111827;
+      margin-top: 2px;
+    }
+    .inv-phone {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111827;
+      margin-top: 2px;
+    }
+    .inv-billed-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 10px;
+    }
+    .inv-meta-grid {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .inv-meta-left, .inv-meta-right {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .inv-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .inv-label {
+      font-weight: 700;
+      color: #111827;
+      min-width: 122px;
+    }
+    .inv-line-val {
+      border-bottom: 1px solid #374151;
+      padding: 2px 10px;
+      min-width: 160px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .inv-box-val {
+      border: 1.5px solid #111827;
+      padding: 3px 12px;
+      min-width: 155px;
+      text-align: center;
+      font-weight: 800;
+    }
+    .inv-payment-mode {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 14px 0 22px 0;
+    }
+    .inv-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 26px;
+    }
+    .inv-table th {
+      border: 1.5px solid #1f2937;
+      padding: 9px 6px;
+      font-weight: 800;
+      text-align: center;
+      background: #ffffff;
+    }
+    .inv-table td {
+      border: 1px solid #374151;
+      padding: 10px 8px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .inv-bottom-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 12px;
+    }
+    .inv-qr-box {
+      width: 112px;
+      height: 112px;
+      border: 1px solid #d1d5db;
+      padding: 5px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .inv-qr-box img, .inv-qr-box canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+    .inv-totals-box {
+      min-width: 250px;
+      font-size: 13px;
+    }
+    .inv-total-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-weight: 700;
+    }
+    .inv-grand-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      margin-top: 4px;
+      border-top: 1px solid #9ca3af;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .inv-footer-links {
+      margin-top: 16px;
+      font-size: 12px;
+    }
+    .inv-yt-link {
+      color: #2563eb;
+      text-decoration: underline;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .inv-bottom-center {
+      text-align: center;
+      margin-top: 12px;
+    }
+    .inv-web-link {
+      color: #2563eb;
+      text-decoration: underline;
+      font-size: 12px;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .inv-thank-btn {
+      display: inline-block;
+      background: #16a34a;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 5px 28px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans pb-20">
+
+  <!-- App Header -->
+  <header id="mainHeader" class="bg-red-600 text-white shadow-md hidden-page select-none sticky top-0 z-40">
+    <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+      <div onclick="navigateTo('homePage')" class="flex items-center space-x-2 cursor-pointer hover:opacity-90 transition">
+        <div class="w-8 h-8 rounded-full bg-white text-red-600 flex items-center justify-center font-bold text-sm shadow">
+          <i class="fa-solid fa-wifi"></i>
+        </div>
+        <h1 class="text-xl font-bold tracking-wide">Robi WiFi</h1>
+      </div>
+
+      <div id="headerProfile" class="flex items-center space-x-2 cursor-pointer" onclick="openProfileModal()">
+        <span id="headerBdoName" class="font-medium text-sm"></span>
+        <div class="w-9 h-9 rounded-full bg-white text-red-600 font-bold flex items-center justify-center border-2 border-white shadow overflow-hidden">
+          <img id="headerUserImg" src="" alt="Profile" class="w-full h-full object-cover hidden">
+          <i id="headerUserIcon" class="fa-solid fa-user"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Instant Toast Notification -->
+  <div id="toastMsg" class="fixed top-16 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg hidden-page z-50 transition"></div>
+
+  <!-- Main Container -->
+  <div class="max-w-md mx-auto p-4">
+
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="bg-white p-6 rounded-xl shadow-md border mt-8">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-2 text-2xl font-bold">
+          <i class="fa-solid fa-wifi"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800">Robi WiFi Login</h2>
+        <p id="connStatus" class="text-xs text-emerald-600 mt-1 font-medium"><i class="fa-solid fa-bolt mr-1"></i> Fast Mode Ready</p>
+      </div>
+      <form onsubmit="handleLogin(event)">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Number</label>
+          <input type="text" id="loginNumber" required placeholder="018xxxxxxxx" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+        </div>
+        <div class="mb-6">
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+        </div>
+        <button type="submit" id="loginBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg shadow transition duration-200">
+          Login
+        </button>
+      </form>
+    </div>
+
+    <!-- HOME PAGE -->
+    <div id="homePage" class="hidden-page space-y-4 mt-2">
+      <div class="bg-white p-4 rounded-xl shadow border">
+        <div class="flex justify-between items-center mb-3 border-b pb-2">
+          <h3 class="text-gray-800 font-bold text-lg">Main Menu</h3>
+          <span id="syncBadge" class="text-[10px] text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Live</span>
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+          <a href="http://accesscon.robi.com.bd/" target="_blank" class="flex items-center p-3 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-red-700 font-semibold shadow-sm transition">
+            <i class="fa-solid fa-globe text-xl w-8 text-center mr-2"></i>
+            <span>accesscon</span>
+          </a>
+
+          <button onclick="navigateTo('complinePage')" class="flex items-center p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg text-blue-700 font-semibold shadow-sm transition">
+            <i class="fa-solid fa-file-pen text-xl w-8 text-center mr-2"></i>
+            <span>Compline Report</span>
+          </button>
+
+          <button onclick="navigateTo('updateIsoPage')" class="flex items-center p-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-emerald-700 font-semibold shadow-sm transition">
+            <i class="fa-solid fa-folder-open text-xl w-8 text-center mr-2"></i>
+            <span>Update ISO File</span>
+          </button>
+
+          <button onclick="navigateTo('bindIssuePage')" class="flex items-center p-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg text-purple-700 font-semibold shadow-sm transition">
+            <i class="fa-solid fa-link text-xl w-8 text-center mr-2"></i>
+            <span>Bind Issue</span>
+          </button>
+
+          <button onclick="openCreateInvoiceForm()" class="flex items-center p-3 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg text-orange-700 font-semibold shadow-sm transition">
+            <i class="fa-solid fa-file-invoice-dollar text-xl w-8 text-center mr-2"></i>
+            <span>Create Invoice</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE INVOICE FORM PAGE -->
+    <div id="createInvoiceFormPage" class="hidden-page bg-white p-5 rounded-xl shadow border">
+      <div class="flex items-center mb-4 border-b pb-2">
+        <button onclick="navigateTo('homePage')" class="text-gray-600 mr-3 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 class="font-bold text-lg text-gray-800">Create Invoice</h3>
+      </div>
+
+      <form onsubmit="handleInvoiceNext(event)" class="space-y-4">
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Customer Name</label>
+          <input type="text" id="invCustName" required placeholder="Enter Customer Name" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm">
+        </div>
+
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Customer E-mail</label>
+          <input type="text" id="invCustEmail" required placeholder="Enter Customer E-mail / Contact" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm">
+        </div>
+
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Invoice Number</label>
+          <input type="text" id="invNumber" required placeholder="Enter Invoice Number" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm">
+        </div>
+
+        <!-- S.L. 01 -->
+        <div class="p-3 bg-gray-50 border rounded-lg space-y-2.5">
+          <div class="text-xs font-bold text-red-600 uppercase">S.L. 01</div>
+          <div>
+            <label class="block text-gray-700 text-xs font-semibold mb-1">Device Select</label>
+            <select id="sl1DeviceSelect" onchange="onSl1DeviceChange()" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm bg-white">
+              <option value="">Select Device</option>
+              <option value="Basic device" data-price="2499">Basic device</option>
+              <option value="Plus Device" data-price="3999">Plus Device</option>
+              <option value="Pro Device" data-price="9999">Pro Device</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-700 text-xs font-semibold mb-1">Unit Price (Auto)</label>
+            <input type="number" id="invUnit1" readonly required placeholder="0" class="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-800 font-bold text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-gray-700 text-xs font-semibold mb-1">Description</label>
+            <input type="text" id="invDesc1" required placeholder="Enter Description (e.g. IMEI / Serial)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm bg-white">
+          </div>
+        </div>
+
+        <!-- S.L. 02 -->
+        <div class="p-3 bg-gray-50 border rounded-lg space-y-2.5">
+          <div class="text-xs font-bold text-red-600 uppercase">S.L. 02</div>
+          <div>
+            <label class="block text-gray-700 text-xs font-semibold mb-1">Package / Device Select</label>
+            <select id="sl2DeviceSelect" onchange="onSl2DeviceChange()" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm bg-white">
+              <option value="">Select Option</option>
+              <option value="Basic device" data-price="1000">Basic device</option>
+              <option value="Plus Device" data-price="1288">Plus Device</option>
+              <option value="Pro Device" data-price="1500">Pro Device</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-700 text-xs font-semibold mb-1">Unit Price (Auto)</label>
+            <input type="number" id="invUnit2" readonly required placeholder="0" class="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-800 font-bold text-sm outline-none">
+          </div>
+        </div>
+
+        <!-- S.L. 03 -->
+        <div class="p-3 bg-gray-50 border rounded-lg space-y-2.5">
+          <div class="text-xs font-bold text-red-600 uppercase">S.L. 03</div>
+          <div>
+            <label class="block text-gray-700 text-xs font-semibold mb-1">Description</label>
+            <input type="text" id="invDesc3" required placeholder="Enter Description (e.g. 8801898519298)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm bg-white">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg shadow transition">
+          Next <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- FULL INVOICE PREVIEW & DOWNLOAD SECTION -->
+  <div id="invoicePreviewPage" class="hidden-page max-w-4xl mx-auto p-3 pb-24">
+    <div class="bg-white p-3 rounded-xl shadow border mb-3 flex items-center justify-between">
+      <button onclick="navigateTo('createInvoiceFormPage')" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs px-3 py-2 rounded-lg transition">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Edit Form
+      </button>
+      <span class="text-xs font-bold text-gray-700">Invoice Preview</span>
+      <button onclick="navigateTo('homePage')" class="text-xs text-red-600 font-semibold">Home</button>
+    </div>
+
+    <div id="previewScrollContainer" class="overflow-x-auto bg-gray-200 p-2 rounded-xl">
+      <div id="invoiceCaptureArea" class="invoice-sheet">
+        <!-- Top Row -->
+        <div class="inv-top-bar">
+          <div class="inv-logo-mark">
+            <svg width="66" height="66" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="50,8 86,29 50,50 14,29" fill="#f97316"></polygon>
+              <polygon points="14,29 50,50 50,92 14,71" fill="#ec4899"></polygon>
+              <polygon points="86,29 86,71 50,92 50,50" fill="#e11d48"></polygon>
+            </svg>
+          </div>
+
+          <div id="invoiceCompletedBadge" class="inv-completed-badge">COMPLETED</div>
+
+          <div class="inv-header-right">
+            <div class="inv-title">INVOICE</div>
+            <div class="inv-brand">ROBI WIFI</div>
+            <div class="inv-phone">+8801899999999</div>
+          </div>
+        </div>
+
+        <!-- Billed To -->
+        <div class="inv-billed-title">Billed To</div>
+
+        <div class="inv-meta-grid">
+          <div class="inv-meta-left">
+            <div class="inv-meta-row">
+              <span class="inv-label">Customer Name :</span>
+              <span id="outCustName" class="inv-line-val"></span>
+            </div>
+            <div class="inv-meta-row">
+              <span class="inv-label">Customer E-mail :</span>
+              <span id="outCustEmail" class="inv-line-val"></span>
+            </div>
+          </div>
+
+          <div class="inv-meta-right">
+            <div class="inv-meta-row">
+              <span class="inv-label">Invoice Number :</span>
+              <span id="outInvNumber" class="inv-box-val"></span>
+            </div>
+            <div class="inv-meta-row">
+              <span class="inv-label">Invoice Date :</span>
+              <span id="outInvDate" class="inv-line-val" style="border-bottom:none; font-weight:800;"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="inv-payment-mode">
+          Payment Mode : <span style="text-decoration: underline;">COD</span>
+        </div>
+
+        <!-- Items Table -->
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th style="width: 10%;">S. L.</th>
+              <th style="width: 44%;">Description</th>
+              <th style="width: 15%;">Unit</th>
+              <th style="width: 12%;">Qty</th>
+              <th style="width: 19%;">Amunt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>01</td>
+              <td id="outDesc1"></td>
+              <td id="outUnit1"></td>
+              <td>1</td>
+              <td id="outAmt1"></td>
+            </tr>
+            <tr>
+              <td>02</td>
+              <td id="outDesc2"></td>
+              <td id="outUnit2"></td>
+              <td>1</td>
+              <td id="outAmt2"></td>
+            </tr>
+            <tr>
+              <td>03</td>
+              <td id="outDesc3"></td>
+              <td id="outUnit3">0</td>
+              <td>1</td>
+              <td id="outAmt3">0.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Bottom Section: Real Scannable QR Code + Totals -->
+        <div class="inv-bottom-grid">
+          <div id="invoiceQrBox" class="inv-qr-box"></div>
+
+          <div class="inv-totals-box">
+            <div class="inv-total-line">
+              <span>Subtotal :</span>
+              <span id="outSubtotal">0.00</span>
+            </div>
+            <div class="inv-total-line">
+              <span>Discount (%) :</span>
+              <span>0.00</span>
+            </div>
+            <div class="inv-grand-total">
+              <span>Total :   BDT</span>
+              <span id="outTotal">0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="inv-footer-links">
+          <a href="https://www.youtube.com/@robiwifibd" target="_blank" class="inv-yt-link">Youtube.com/@Robiwifibd</a>
+        </div>
+
+        <div class="inv-bottom-center">
+          <a href="https://robiwifi.robi.com.bd" target="_blank" class="inv-web-link">https://robiwifi.robi.com.bd</a>
+          <div class="inv-thank-btn">Thank You</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Single Crash-Safe Download Button -->
+    <div class="mt-4">
+      <button onclick="downloadInvoicePDF()" id="downloadPdfBtn" type="button" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-file-arrow-down text-lg"></i>
+        <span>Download Invoice PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Other Existing Pages Container -->
+  <div class="max-w-md mx-auto p-4">
+
+    <!-- BIND ISSUE FORM PAGE -->
+    <div id="bindIssuePage" class="hidden-page bg-white p-5 rounded-xl shadow border">
+      <div class="flex items-center mb-4 border-b pb-2">
+        <button onclick="navigateTo('homePage')" class="text-gray-600 mr-3 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 class="font-bold text-lg text-gray-800">Bind Issue Submission</h3>
+      </div>
+
+      <form onsubmit="handleBindIssueSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Bind Issue</label>
+          <select id="bindIssueSelect" onchange="toggleBindIssueFields()" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white">
+            <option value="">Select Issue</option>
+            <option value="Bind Issue">Bind Issue</option>
+            <option value="Change Number">Change Number</option>
+            <option value="Shwap">Shwap</option>
+          </select>
+        </div>
+
+        <div id="shwapDeviceGroup" class="hidden-page">
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Device Select</label>
+          <select id="shwapDeviceSelect" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white">
+            <option value="">Select Device</option>
+            <option value="5G Device">5G Device</option>
+            <option value="Cat4 to Cat6 Device">Cat4 to Cat6 Device</option>
+          </select>
+        </div>
+
+        <div id="oldLoginGroup" class="hidden-page">
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Old Login Number</label>
+          <input type="text" id="oldLoginNumber" placeholder="Enter Old Login Number" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Order Number</label>
+          <input type="text" id="bindOrderNumber" required placeholder="Enter Order Number" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Login Number</label>
+          <input type="text" id="bindLoginNumber" required placeholder="Enter Login Number" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">FWA Number</label>
+          <input type="text" id="bindFwaNumber" required placeholder="Enter FWA Number" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+
+        <button type="submit" id="submitBindBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg shadow transition">
+          Submit
+        </button>
+      </form>
+    </div>
+
+    <!-- SEARCH PAGE -->
+    <div id="searchPage" class="hidden-page bg-white p-5 rounded-xl shadow border mt-2">
+      <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <div class="flex items-center">
+          <i class="fa-solid fa-magnifying-glass text-red-600 mr-2 text-lg"></i>
+          <h3 class="font-bold text-lg text-gray-800">Search SR Report</h3>
+        </div>
+        <button onclick="syncAllData(true)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 rounded">
+          <i class="fa-solid fa-rotate mr-1"></i>Sync
+        </button>
+      </div>
+      <form onsubmit="handleSearchSr(event)" class="flex space-x-2 mb-4">
+        <input type="text" id="searchSrInput" oninput="instantSearchSr()" required placeholder="SR ID লিখুন" class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm">
+        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg shadow text-sm transition">
+          Search
+        </button>
+      </form>
+      <div id="searchResultList" class="space-y-3 text-sm">
+        <p class="text-gray-400 text-center py-6 text-xs">SR ID লিখলেই ০.৫ সেকেন্ডের মধ্যে রিপোর্ট দেখাবে</p>
+      </div>
+    </div>
+
+    <!-- QUIZ PAGE -->
+    <div id="quizPage" class="hidden-page bg-white p-5 rounded-xl shadow border mt-2">
+      <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <div class="flex items-center">
+          <i class="fa-solid fa-circle-question text-red-600 mr-2 text-lg"></i>
+          <h3 class="font-bold text-lg text-gray-800">Robi WiFi Quiz</h3>
+        </div>
+        <span id="quizProgressBadge" class="text-xs bg-red-100 text-red-700 font-bold px-2.5 py-1 rounded-full">1 / 5</span>
+      </div>
+
+      <div id="quizContent" class="hidden">
+        <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded mb-3">
+          <i class="fa-solid fa-circle-info mr-1"></i> সতর্কতা: কুইজটি মাত্র ১ বারই সাবমিট করা যাবে।
+        </p>
+        <p id="quizQuestion" class="font-semibold text-gray-800 text-base mb-4"></p>
+        <div id="quizOptions" class="space-y-2.5"></div>
+        <button id="nextQuizBtn" onclick="nextQuizQuestion()" class="hidden w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg shadow transition">
+          পরবর্তী প্রশ্ন <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+
+      <div id="quizResultBox" class="hidden text-center py-6 space-y-3">
+        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h4 class="text-xl font-bold text-gray-800">কুইজ সাবমিট সম্পন্ন হয়েছে!</h4>
+        <p id="quizScoreText" class="text-sm text-gray-600 font-medium"></p>
+        <div id="submittedAnswersPreview" class="text-left bg-gray-50 border rounded-lg p-3 text-xs space-y-1.5 text-gray-700 mt-3"></div>
+      </div>
+    </div>
+
+    <!-- SETTING PAGE -->
+    <div id="settingPage" class="hidden-page bg-white p-5 rounded-xl shadow border mt-2">
+      <div class="flex items-center mb-4 border-b pb-2">
+        <i class="fa-solid fa-gear text-red-600 mr-2 text-lg"></i>
+        <h3 class="font-bold text-lg text-gray-800">Settings</h3>
+      </div>
+
+      <div class="space-y-3">
+        <button onclick="openMyReportsFromSetting()" class="w-full flex items-center justify-between p-3.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-semibold rounded-lg shadow-sm transition">
+          <span class="flex items-center"><i class="fa-solid fa-clipboard-list w-7 text-lg"></i> My Report (Today)</span>
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+
+        <button onclick="navigateTo('changePasswordPage')" class="w-full flex items-center justify-between p-3.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-semibold rounded-lg shadow-sm transition">
+          <span class="flex items-center"><i class="fa-solid fa-key w-7 text-lg"></i> Change Password</span>
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+
+        <button onclick="logout()" class="w-full flex items-center justify-between p-3.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 font-semibold rounded-lg shadow-sm transition">
+          <span class="flex items-center"><i class="fa-solid fa-right-from-bracket w-7 text-lg"></i> Logout</span>
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- UPDATE ISO FILE PAGE -->
+    <div id="updateIsoPage" class="hidden-page bg-white p-5 rounded-xl shadow border">
+      <div class="flex items-center mb-4">
+        <button onclick="navigateTo('homePage')" class="text-gray-600 mr-3 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 class="font-bold text-lg text-gray-800">Update ISO File</h3>
+      </div>
+      <div class="space-y-3">
+        <a href="http://accesscon.robi.com.bd/" target="_blank" class="block w-full text-center bg-gray-800 hover:bg-black text-white font-semibold py-3 rounded-lg shadow transition">
+          Accesscon Robi
+        </a>
+        <a href="https://www.appcreator24.com" target="_blank" class="block w-full text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg shadow transition">
+          AppCreator24
+        </a>
+      </div>
+    </div>
+
+    <!-- COMPLINE REPORT FORM PAGE -->
+    <div id="complinePage" class="hidden-page bg-white p-5 rounded-xl shadow border">
+      <div class="flex items-center mb-4 border-b pb-2">
+        <button onclick="navigateTo('homePage')" class="text-gray-600 mr-3 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 class="font-bold text-lg text-gray-800">Compline Report Submission</h3>
+      </div>
+      <form onsubmit="handleComplineSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">SR ID</label>
+          <input type="text" id="srId" required placeholder="Enter SR ID" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Status</label>
+          <select id="statusSelect" onchange="toggleNewDateField()" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white">
+            <option value="">Select Status</option>
+            <option value="Customer Reschudul">Customer Reschudul</option>
+            <option value="Customer Unrech">Customer Unrech</option>
+            <option value="Ask Later">Ask Later</option>
+            <option value="Cancel">Cancel</option>
+          </select>
+        </div>
+        <div id="newDateFieldGroup" class="hidden-page">
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Next Date</label>
+          <input type="date" id="newDate" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Comment</label>
+          <textarea id="comment" rows="3" required placeholder="Write comment..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none"></textarea>
+        </div>
+        <button type="submit" id="submitReportBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg shadow transition">
+          Submit
+        </button>
+      </form>
+    </div>
+
+    <!-- MY REPORT PAGE (TODAY ONLY) -->
+    <div id="myReportPage" class="hidden-page bg-white p-5 rounded-xl shadow border">
+      <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <div class="flex items-center">
+          <button onclick="navigateTo('settingPage')" class="text-gray-600 mr-3 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+          <div>
+            <h3 class="font-bold text-lg text-gray-800">Today's Reports</h3>
+            <p id="todayDateLabel" class="text-[11px] text-gray-500"></p>
+          </div>
+        </div>
+        <button onclick="syncAllData(true)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 rounded">
+          <i class="fa-solid fa-rotate mr-1"></i>Refresh
+        </button>
+      </div>
+      <div id="reportList" class="space-y-3 text-sm"></div>
+    </div>
+
+    <!-- CHANGE PASSWORD PAGE -->
+    <div id="changePasswordPage" class="hidden-page bg-white p-5 rounded-xl shadow border">
+      <div class="flex items-center mb-4 border-b pb-2">
+        <button onclick="navigateTo('settingPage')" class="text-gray-600 mr-3 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 class="font-bold text-lg text-gray-800">Change Password</h3>
+      </div>
+      <form onsubmit="handleChangePassword(event)" class="space-y-4">
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Old Password</label>
+          <input type="password" id="oldPassword" required placeholder="Enter old password" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">New Password</label>
+          <input type="password" id="newPassword" required placeholder="Enter new password" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-gray-700 text-sm font-semibold mb-1">Confirm New Password</label>
+          <input type="password" id="confirmNewPassword" required placeholder="Confirm new password" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+        <button type="submit" id="changePassBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg shadow transition">
+          Update Password
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg hidden-page z-40 select-none">
+    <div class="max-w-md mx-auto grid grid-cols-4 h-16">
+      <button onclick="navigateTo('homePage')" id="nav-homePage" class="nav-btn flex flex-col items-center justify-center text-red-600 font-semibold transition">
+        <i class="fa-solid fa-house text-lg mb-0.5"></i>
+        <span class="text-[11px]">Home</span>
+      </button>
+
+      <button onclick="navigateTo('searchPage')" id="nav-searchPage" class="nav-btn flex flex-col items-center justify-center text-gray-500 hover:text-red-600 transition">
+        <i class="fa-solid fa-magnifying-glass text-lg mb-0.5"></i>
+        <span class="text-[11px]">Search</span>
+      </button>
+
+      <button onclick="openQuizPage()" id="nav-quizPage" class="nav-btn flex flex-col items-center justify-center text-gray-500 hover:text-red-600 transition">
+        <i class="fa-solid fa-circle-question text-lg mb-0.5"></i>
+        <span class="text-[11px]">Quiz</span>
+      </button>
+
+      <button onclick="navigateTo('settingPage')" id="nav-settingPage" class="nav-btn flex flex-col items-center justify-center text-gray-500 hover:text-red-600 transition">
+        <i class="fa-solid fa-gear text-lg mb-0.5"></i>
+        <span class="text-[11px]">Setting</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- PROFILE MODAL -->
+  <div id="profileModal" class="fixed inset-0 bg-black/50 hidden-page flex items-center justify-center p-4 z-50">
+    <div class="bg-white w-full max-w-sm rounded-xl p-5 shadow-xl relative">
+      <button onclick="closeProfileModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+
+      <div class="text-center mb-4">
+        <div class="relative w-20 h-20 mx-auto mb-2">
+          <div class="w-full h-full rounded-full bg-red-100 text-red-600 font-bold flex items-center justify-center border-2 border-red-500 overflow-hidden shadow">
+            <img id="modalUserImg" src="" alt="Profile Photo" class="w-full h-full object-cover hidden">
+            <i id="modalUserIcon" class="fa-solid fa-user text-3xl"></i>
+          </div>
+          <label for="profilePhotoInput" class="absolute bottom-0 right-0 bg-red-600 text-white p-1.5 rounded-full shadow cursor-pointer hover:bg-red-700 transition">
+            <i class="fa-solid fa-camera text-xs"></i>
+          </label>
+          <input type="file" id="profilePhotoInput" accept="image/*" class="hidden" onchange="uploadProfilePhoto(event)">
+        </div>
+
+        <h3 id="modalBdoName" class="font-bold text-lg text-gray-800"></h3>
+        <p id="modalNumber" class="text-xs text-gray-500"></p>
+      </div>
+
+      <div class="space-y-2.5 text-sm border-t pt-3">
+        <div class="flex justify-between"><span class="text-gray-500">ID Number:</span> <span id="modalIdNumber" class="font-semibold text-gray-800"></span></div>
+        <div class="flex justify-between"><span class="text-gray-500">WIC:</span> <span id="modalWic" class="font-semibold text-gray-800"></span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Supervisor:</span> <span id="modalSupervisor" class="font-semibold text-gray-800"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxEucCJhbOlfO5kKuIQVkdGruOQGkmKqKWtfkefxWoz8-j3H3MdaXMHaaKu3x8IPujD/exec";
+    
+    let currentUser = null;
+    let cachedReports = JSON.parse(localStorage.getItem('robi_cache_reports') || '[]');
+    let cachedQuizMap = JSON.parse(localStorage.getItem('robi_cache_quiz') || '{}');
+    let cachedUsers = JSON.parse(localStorage.getItem('robi_cache_users') || '[]');
+
+    let latestInvoiceData = {
+      custName: '',
+      custEmail: '',
+      invNumber: '',
+      invDate: '',
+      desc1: '',
+      unit1: '0',
+      amt1: '0.00',
+      desc2: '',
+      unit2: '0',
+      amt2: '0.00',
+      desc3: '',
+      unit3: '0',
+      amt3: '0.00',
+      subtotal: '0.00',
+      total: '0.00'
+    };
+
+    window.onload = function() {
+      generateInvoiceQRCode();
+      const savedUser = localStorage.getItem('robi_user');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+          if (currentUser && currentUser.idNumber) {
+            setupUserUI();
+            navigateTo('homePage');
+            syncAllData(false);
+            return;
+          }
+        } catch (e) {
+          localStorage.removeItem('robi_user');
+        }
+      }
+      navigateTo('loginPage');
+      syncAllData(false);
+    };
+
+    function generateInvoiceQRCode() {
+      const qrBox = document.getElementById('invoiceQrBox');
+      if (!qrBox) return;
+      qrBox.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        try {
+          new QRCode(qrBox, {
+            text: "https://www.youtube.com/@robiwifibd",
+            width: 102,
+            height: 102,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } catch (err) {
+          qrBox.innerHTML = '<span style="font-size:10px;color:#555;">robiwifibd</span>';
+        }
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastMsg');
+      toast.innerText = msg;
+      toast.classList.remove('hidden-page');
+      setTimeout(() => toast.classList.add('hidden-page'), 2400);
+    }
+
+    function getTodayDateKey() {
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Dhaka',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(now);
+      const y = parts.find(p => p.type === 'year').value;
+      const m = parts.find(p => p.type === 'month').value;
+      const d = parts.find(p => p.type === 'day').value;
+      return `${y}-${m}-${d}`;
+    }
+
+    function getFormattedInvoiceDate() {
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Dhaka',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      }).formatToParts(now);
+      const d = parts.find(p => p.type === 'day').value;
+      const m = parts.find(p => p.type === 'month').value;
+      const y = parts.find(p => p.type === 'year').value;
+      return `${d}-${m}-${y}`;
+    }
+
+    function openCreateInvoiceForm() {
+      navigateTo('createInvoiceFormPage');
+    }
+
+    function onSl1DeviceChange() {
+      const sel = document.getElementById('sl1DeviceSelect');
+      const selectedOpt = sel.options[sel.selectedIndex];
+      const price = selectedOpt ? (selectedOpt.getAttribute('data-price') || '') : '';
+      document.getElementById('invUnit1').value = price;
+    }
+
+    function onSl2DeviceChange() {
+      const sel = document.getElementById('sl2DeviceSelect');
+      const selectedOpt = sel.options[sel.selectedIndex];
+      const price = selectedOpt ? (selectedOpt.getAttribute('data-price') || '') : '';
+      document.getElementById('invUnit2').value = price;
+    }
+
+    function formatAmountPlain(val) {
+      const num = parseFloat(val) || 0;
+      return num.toFixed(2);
+    }
+
+    function formatAmountComma(val) {
+      const num = parseFloat(val) || 0;
+      return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatUnitDisplay(val) {
+      const num = parseFloat(val) || 0;
+      if (num === 0) return "0";
+      return num.toLocaleString('en-US');
+    }
+
+    function handleInvoiceNext(e) {
+      e.preventDefault();
+
+      const custName = document.getElementById('invCustName').value.trim();
+      const custEmail = document.getElementById('invCustEmail').value.trim();
+      const invNumber = document.getElementById('invNumber').value.trim();
+      const invDate = getFormattedInvoiceDate();
+
+      const sl1Device = document.getElementById('sl1DeviceSelect').value;
+      const unit1Raw = parseFloat(document.getElementById('invUnit1').value) || 0;
+      const desc1Input = document.getElementById('invDesc1').value.trim();
+      const fullDesc1 = desc1Input ? `(${sl1Device}) - ${desc1Input}` : sl1Device;
+
+      const sl2Device = document.getElementById('sl2DeviceSelect').value;
+      const unit2Raw = parseFloat(document.getElementById('invUnit2').value) || 0;
+
+      const desc3Input = document.getElementById('invDesc3').value.trim();
+      const unit3Raw = 0;
+
+      const amt1 = unit1Raw;
+      const amt2 = unit2Raw;
+      const amt3 = unit3Raw;
+      const subtotal = amt1 + amt2 + amt3;
+      const total = subtotal;
+
+      const unit1Str = formatUnitDisplay(unit1Raw);
+      const amt1Str = formatAmountPlain(amt1);
+      const unit2Str = formatUnitDisplay(unit2Raw);
+      const amt2Str = formatAmountPlain(amt2);
+      const subtotalStr = formatAmountPlain(subtotal);
+      const totalStr = formatAmountComma(total);
+
+      latestInvoiceData = {
+        custName,
+        custEmail,
+        invNumber,
+        invDate,
+        desc1: fullDesc1,
+        unit1: unit1Str,
+        amt1: amt1Str,
+        desc2: sl2Device,
+        unit2: unit2Str,
+        amt2: amt2Str,
+        desc3: desc3Input,
+        unit3: "0",
+        amt3: "0.00",
+        subtotal: subtotalStr,
+        total: totalStr
+      };
+
+      document.getElementById('outCustName').innerText = custName;
+      document.getElementById('outCustEmail').innerText = custEmail;
+      document.getElementById('outInvNumber').innerText = invNumber;
+      document.getElementById('outInvDate').innerText = invDate;
+
+      document.getElementById('outDesc1').innerText = fullDesc1;
+      document.getElementById('outUnit1').innerText = unit1Str;
+      document.getElementById('outAmt1').innerText = amt1Str;
+
+      document.getElementById('outDesc2').innerText = sl2Device;
+      document.getElementById('outUnit2').innerText = unit2Str;
+      document.getElementById('outAmt2').innerText = amt2Str;
+
+      document.getElementById('outDesc3').innerText = desc3Input;
+      document.getElementById('outUnit3').innerText = "0";
+      document.getElementById('outAmt3').innerText = "0.00";
+
+      document.getElementById('outSubtotal').innerText = subtotalStr;
+      document.getElementById('outTotal').innerText = totalStr;
+
+      generateInvoiceQRCode();
+      navigateTo('invoicePreviewPage');
+
+      const scrollBox = document.getElementById('previewScrollContainer');
+      if (scrollBox) scrollBox.scrollLeft = 0;
+    }
+
+    function downloadInvoicePDF() {
+      const btn = document.getElementById('downloadPdfBtn');
+      const originalHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Generating PDF...</span>';
+        btn.disabled = true;
+      }
+
+      setTimeout(() => {
+        try {
+          if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error("jsPDF not loaded");
+          }
+
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+          });
+
+          const d = latestInvoiceData;
+          const safeInvNum = (d.invNumber || 'Invoice').replace(/[^a-zA-Z0-9_-]/g, '_');
+          const fileName = `Robi_WiFi_Invoice_${safeInvNum}.pdf`;
+
+          // Top Brand Header
+          doc.setFillColor(220, 38, 38);
+          doc.rect(0, 0, 210, 28, 'F');
+
+          doc.setTextColor(255, 255, 255);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(18);
+          doc.text('ROBI WIFI', 14, 13);
+
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Invoice & Billing Statement', 14, 20);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(16);
+          doc.text('INVOICE', 196, 14, { align: 'right' });
+          doc.setFontSize(10);
+          doc.text('+8801899999999', 196, 21, { align: 'right' });
+
+          // Status badge text
+          doc.setTextColor(22, 163, 74);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.text('STATUS: COMPLETED', 196, 36, { align: 'right' });
+
+          // Billed To Section
+          doc.setTextColor(17, 24, 39);
+          doc.setFontSize(13);
+          doc.text('Billed To', 14, 38);
+
+          doc.setDrawColor(209, 213, 219);
+          doc.line(14, 41, 196, 41);
+
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'bold');
+          doc.text('Customer Name:', 14, 49);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(d.custName || '-'), 52, 49);
+
+          doc.setFont('helvetica', 'bold');
+          doc.text('Invoice No:', 125, 49);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(d.invNumber || '-'), 155, 49);
+
+          doc.setFont('helvetica', 'bold');
+          doc.text('Customer E-mail:', 14, 57);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(d.custEmail || '-'), 52, 57);
+
+          doc.setFont('helvetica', 'bold');
+          doc.text('Invoice Date:', 125, 57);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(d.invDate || getFormattedInvoiceDate()), 155, 57);
+
+          doc.setFont('helvetica', 'bold');
+          doc.text('Payment Mode: COD', 14, 66);
+
+          // Table Header
+          const tableTop = 74;
+          doc.setFillColor(243, 244, 246);
+          doc.rect(14, tableTop, 182, 9, 'F');
+          doc.setDrawColor(55, 65, 81);
+          doc.rect(14, tableTop, 182, 9);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(17, 24, 39);
+          doc.text('S.L.', 18, tableTop + 6);
+          doc.text('Description', 34, tableTop + 6);
+          doc.text('Unit', 136, tableTop + 6, { align: 'right' });
+          doc.text('Qty', 154, tableTop + 6, { align: 'center' });
+          doc.text('Amount', 192, tableTop + 6, { align: 'right' });
+
+          // Rows
+          const rows = [
+            ['01', d.desc1 || '-', d.unit1 || '0', '1', d.amt1 || '0.00'],
+            ['02', d.desc2 || '-', d.unit2 || '0', '1', d.amt2 || '0.00'],
+            ['03', d.desc3 || '-', d.unit3 || '0', '1', d.amt3 || '0.00']
+          ];
+
+          let currentY = tableTop + 9;
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9.5);
+
+          rows.forEach((row) => {
+            const rowHeight = 11;
+            doc.setDrawColor(156, 163, 175);
+            doc.rect(14, currentY, 182, rowHeight);
+
+            doc.text(String(row[0]), 18, currentY + 7);
+            const descText = String(row[1]).length > 52 ? String(row[1]).slice(0, 52) + '...' : String(row[1]);
+            doc.text(descText, 34, currentY + 7);
+            doc.text(String(row[2]), 136, currentY + 7, { align: 'right' });
+            doc.text(String(row[3]), 154, currentY + 7, { align: 'center' });
+            doc.text(String(row[4]), 192, currentY + 7, { align: 'right' });
+
+            currentY += rowHeight;
+          });
+
+          // Totals Box
+          const totY = currentY + 10;
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.text('Subtotal:', 132, totY);
+          doc.text(String(d.subtotal || '0.00'), 192, totY, { align: 'right' });
+
+          doc.text('Discount (%):', 132, totY + 7);
+          doc.text('0.00', 192, totY + 7, { align: 'right' });
+
+          doc.setDrawColor(55, 65, 81);
+          doc.line(130, totY + 11, 196, totY + 11);
+
+          doc.setFontSize(12);
+          doc.text('Total (BDT):', 130, totY + 18);
+          doc.text(String(d.total || '0.00'), 192, totY + 18, { align: 'right' });
+
+          // Add QR image if available
+          const qrCanvas = document.querySelector('#invoiceQrBox canvas');
+          if (qrCanvas) {
+            try {
+              const qrDataUrl = qrCanvas.toDataURL('image/png');
+              doc.addImage(qrDataUrl, 'PNG', 14, totY - 2, 26, 26);
+            } catch (e) {}
+          }
+
+          // Footer Links
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9.5);
+          doc.setTextColor(37, 99, 235);
+          doc.text('YouTube: https://www.youtube.com/@robiwifibd', 14, totY + 36);
+          doc.text('Website: https://robiwifi.robi.com.bd', 14, totY + 42);
+
+          doc.setTextColor(22, 163, 74);
+          doc.setFont('helvetica', 'bold');
+          doc.text('Thank You for choosing Robi WiFi!', 105, totY + 56, { align: 'center' });
+
+          // Safe download method for Android WebView
+          try {
+            const pdfDataUri = doc.output('datauristring');
+            const a = document.createElement('a');
+            a.href = pdfDataUri;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          } catch (dlErr) {
+            doc.save(fileName);
+          }
+
+          showToast('Invoice PDF Downloaded!');
+        } catch (err) {
+          showToast('PDF তৈরি করতে সমস্যা হয়েছে: ' + err.message);
+        } finally {
+          if (btn) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+          }
+        }
+      }, 150);
+    }
+
+    async function syncAllData(showNotify = false) {
+      const badge = document.getElementById('syncBadge');
+      if (badge) badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
+
+      try {
+        const res = await fetch(`${WEB_APP_URL}?action=syncAll&t=${Date.now()}`, { method: 'GET', redirect: 'follow' });
+        const data = await res.json();
+        if (data.status === 'success') {
+          cachedReports = data.reports || [];
+          cachedQuizMap = data.quizMap || {};
+          if (data.users) cachedUsers = data.users;
+
+          localStorage.setItem('robi_cache_reports', JSON.stringify(cachedReports));
+          localStorage.setItem('robi_cache_quiz', JSON.stringify(cachedQuizMap));
+          localStorage.setItem('robi_cache_users', JSON.stringify(cachedUsers));
+
+          if (badge) badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Live';
+          if (showNotify) {
+            showToast('সব ডেটা আপডেট হয়েছে!');
+            renderMyReportsFromCache();
+            instantSearchSr();
+          }
+        }
+      } catch (err) {
+        if (badge) badge.innerHTML = '<i class="fa-solid fa-bolt"></i> Offline Cache';
+      }
+    }
+
+    function navigateTo(pageId) {
+      const pages = [
+        'loginPage', 'homePage', 'searchPage', 'quizPage', 
+        'settingPage', 'updateIsoPage', 'complinePage', 'bindIssuePage',
+        'myReportPage', 'changePasswordPage', 'createInvoiceFormPage', 'invoicePreviewPage'
+      ];
+      pages.forEach(p => {
+        const el = document.getElementById(p);
+        if (el) el.classList.add('hidden-page');
+      });
+      const target = document.getElementById(pageId);
+      if (target) target.classList.remove('hidden-page');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-red-600', 'font-semibold');
+        btn.classList.add('text-gray-500');
+      });
+
+      let activeNavId = 'nav-' + pageId;
+      if (
+        pageId === 'updateIsoPage' ||
+        pageId === 'complinePage' ||
+        pageId === 'bindIssuePage' ||
+        pageId === 'createInvoiceFormPage' ||
+        pageId === 'invoicePreviewPage'
+      ) activeNavId = 'nav-homePage';
+      if (pageId === 'myReportPage' || pageId === 'changePasswordPage') activeNavId = 'nav-settingPage';
+
+      const activeBtn = document.getElementById(activeNavId);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-gray-500');
+        activeBtn.classList.add('text-red-600', 'font-semibold');
+      }
+    }
+
+    function formatPhoneNumber(num) {
+      let cleaned = String(num || "").trim().replace(/\D/g, '');
+      if (cleaned.startsWith('880') && cleaned.length === 13) {
+        cleaned = '0' + cleaned.slice(3);
+      } else if (cleaned.length === 10 && !cleaned.startsWith('0')) {
+        cleaned = '0' + cleaned;
+      }
+      return cleaned;
+    }
+
+    function setupUserUI() {
+      document.getElementById('mainHeader').classList.remove('hidden-page');
+      document.getElementById('bottomNav').classList.remove('hidden-page');
+      document.getElementById('headerBdoName').innerText = currentUser.bdoName || '';
+      document.getElementById('modalBdoName').innerText = currentUser.bdoName || '';
+      document.getElementById('modalNumber').innerText = formatPhoneNumber(currentUser.number);
+      document.getElementById('modalIdNumber').innerText = currentUser.idNumber || '';
+      document.getElementById('modalWic').innerText = currentUser.wic || '';
+      document.getElementById('modalSupervisor').innerText = currentUser.supervisor || '';
+
+      const savedPhoto = localStorage.getItem('robi_user_photo_' + currentUser.idNumber);
+      updatePhotoUI(savedPhoto);
+    }
+
+    function uploadProfilePhoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Img = e.target.result;
+        if (currentUser && currentUser.idNumber) {
+          localStorage.setItem('robi_user_photo_' + currentUser.idNumber, base64Img);
+        }
+        updatePhotoUI(base64Img);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updatePhotoUI(imgSrc) {
+      const headerImg = document.getElementById('headerUserImg');
+      const headerIcon = document.getElementById('headerUserIcon');
+      const modalImg = document.getElementById('modalUserImg');
+      const modalIcon = document.getElementById('modalUserIcon');
+
+      if (imgSrc) {
+        headerImg.src = imgSrc;
+        headerImg.classList.remove('hidden');
+        headerIcon.classList.add('hidden');
+
+        modalImg.src = imgSrc;
+        modalImg.classList.remove('hidden');
+        modalIcon.classList.add('hidden');
+      } else {
+        headerImg.classList.add('hidden');
+        headerIcon.classList.remove('hidden');
+
+        modalImg.classList.add('hidden');
+        modalIcon.classList.remove('hidden');
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+
+      const rawNumber = document.getElementById('loginNumber').value.trim();
+      const normNumber = formatPhoneNumber(rawNumber);
+      const password = document.getElementById('loginPassword').value.trim();
+      const btn = document.getElementById('loginBtn');
+      btn.innerText = 'Logging in...';
+      btn.disabled = true;
+
+      try {
+        const reqUrl = `${WEB_APP_URL}?action=login&number=${encodeURIComponent(normNumber)}&password=${encodeURIComponent(password)}&t=${Date.now()}`;
+        const res = await fetch(reqUrl, { method: 'GET', redirect: 'follow' });
+        const data = await res.json();
+        
+        if (data.status === 'success' && data.user) {
+          completeLoginSuccess(data.user);
+          return;
+        }
+
+        const syncRes = await fetch(`${WEB_APP_URL}?action=syncAll&t=${Date.now()}`, { method: 'GET', redirect: 'follow' });
+        const syncData = await syncRes.json();
+        if (syncData.status === 'success' && Array.isArray(syncData.users)) {
+          const matchedUser = syncData.users.find(u => formatPhoneNumber(u.number) === normNumber && String(u.password).trim() === password);
+          if (matchedUser) {
+            completeLoginSuccess(matchedUser);
+            return;
+          }
+        }
+
+        alert(data.message || 'Number অথবা Password ভুল!');
+      } catch (err) {
+        alert('Connection Error! ইন্টারনেট বা সার্ভার চেক করুন।');
+      } finally {
+        btn.innerText = 'Login';
+        btn.disabled = false;
+      }
+    }
+
+    function completeLoginSuccess(userObj) {
+      currentUser = userObj;
+      localStorage.setItem('robi_user', JSON.stringify(currentUser));
+      setupUserUI();
+      navigateTo('homePage');
+      document.getElementById('loginNumber').value = '';
+      document.getElementById('loginPassword').value = '';
+      syncAllData(false);
+    }
+
+    function toggleBindIssueFields() {
+      const val = document.getElementById('bindIssueSelect').value;
+      const shwapGroup = document.getElementById('shwapDeviceGroup');
+      const shwapSelect = document.getElementById('shwapDeviceSelect');
+      const oldLoginGroup = document.getElementById('oldLoginGroup');
+      const oldLoginInput = document.getElementById('oldLoginNumber');
+
+      if (val === 'Shwap') {
+        shwapGroup.classList.remove('hidden-page');
+        shwapSelect.required = true;
+        oldLoginGroup.classList.add('hidden-page');
+        oldLoginInput.required = false;
+        oldLoginInput.value = '';
+      } else if (val === 'Change Number') {
+        oldLoginGroup.classList.remove('hidden-page');
+        oldLoginInput.required = true;
+        shwapGroup.classList.add('hidden-page');
+        shwapSelect.required = false;
+        shwapSelect.value = '';
+      } else {
+        shwapGroup.classList.add('hidden-page');
+        shwapSelect.required = false;
+        shwapSelect.value = '';
+        oldLoginGroup.classList.add('hidden-page');
+        oldLoginInput.required = false;
+        oldLoginInput.value = '';
+      }
+    }
+
+    function handleBindIssueSubmit(e) {
+      e.preventDefault();
+      if (!currentUser) return alert('Please login again.');
+
+      const issueType = document.getElementById('bindIssueSelect').value;
+      const shwapDevice = document.getElementById('shwapDeviceSelect').value;
+      const oldLogin = document.getElementById('oldLoginNumber').value.trim();
+      const orderNumber = document.getElementById('bindOrderNumber').value.trim();
+      const loginNumber = document.getElementById('bindLoginNumber').value.trim();
+      const fwaNumber = document.getElementById('bindFwaNumber').value.trim();
+
+      let extraInfo = '';
+      if (issueType === 'Shwap') extraInfo = shwapDevice;
+      if (issueType === 'Change Number') extraInfo = oldLogin;
+
+      const payload = {
+        type: 'bindIssue',
+        idNumber: currentUser.idNumber,
+        issueType: issueType,
+        extraInfo: extraInfo,
+        orderNumber: orderNumber,
+        loginNumber: loginNumber,
+        fwaNumber: fwaNumber
+      };
+
+      document.getElementById('bindIssueSelect').value = '';
+      document.getElementById('shwapDeviceSelect').value = '';
+      document.getElementById('oldLoginNumber').value = '';
+      document.getElementById('bindOrderNumber').value = '';
+      document.getElementById('bindLoginNumber').value = '';
+      document.getElementById('bindFwaNumber').value = '';
+      toggleBindIssueFields();
+      navigateTo('homePage');
+      showToast('Bind Issue Submitted Successfully!');
+
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    function handleSearchSr(e) {
+      e.preventDefault();
+      instantSearchSr();
+    }
+
+    function instantSearchSr() {
+      const srQuery = document.getElementById('searchSrInput').value.trim().toLowerCase();
+      const container = document.getElementById('searchResultList');
+
+      if (!srQuery) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-6 text-xs">SR ID লিখলেই ০.৫ সেকেন্ডের মধ্যে রিপোর্ট দেখাবে</p>';
+        return;
+      }
+
+      const matches = cachedReports.filter(r => String(r.srId || '').toLowerCase().includes(srQuery));
+
+      if (matches.length === 0) {
+        container.innerHTML = `<p class="text-gray-500 text-center py-4"><strong>${srQuery}</strong> এর কোনো রিপোর্ট পাওয়া যায়নি।</p>`;
+        return;
+      }
+
+      container.innerHTML = matches.map(r => `
+        <div class="border rounded-lg p-3 bg-gray-50 space-y-1.5 shadow-sm">
+          <div class="flex justify-between items-center font-bold text-gray-800">
+            <span>SR ID: ${r.srId}</span>
+            <span class="text-xs px-2 py-0.5 rounded ${r.status === 'Cancel' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">${r.status}</span>
+          </div>
+          <div class="text-xs text-red-700 font-semibold">
+            <i class="fa-solid fa-user-check mr-1"></i> রিপোর্ট দিয়েছেন: ${r.bdoName ? r.bdoName + ' (' + r.idNumber + ')' : r.idNumber}
+          </div>
+          ${r.nextDate ? `<div class="text-xs text-amber-700 font-medium"><i class="fa-solid fa-calendar-days mr-1"></i> Next Date: ${r.nextDate}</div>` : ''}
+          <div class="text-xs text-gray-600"><strong>Comment:</strong> ${r.comment}</div>
+          ${r.supervisor ? `<div class="text-xs text-gray-500"><strong>Supervisor:</strong> ${r.supervisor}</div>` : ''}
+          <div class="text-[11px] text-gray-500 text-right border-t pt-1 mt-1 font-medium">
+            <i class="fa-regular fa-clock mr-1"></i> তারিখ ও সময়: ${r.dateTime}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    const robiWifiQuizzes = [
+      {
+        q: "Robi WiFi রাউটারের অ্যাডমিন প্যানেলে লগইন করার ডিফল্ট IP অ্যাড্রেস সাধারণত কোনটি?",
+        options: ["192.168.0.1 বা 192.168.1.1", "10.0.0.55", "172.16.254.1", "192.168.100.50"]
+      },
+      {
+        q: "কাস্টমার পরবর্তীতে সংযোগ নিতে চাইলে Compline Report-এ কোন Status সিলেক্ট করতে হয়?",
+        options: ["Cancel", "Customer Unrech", "Customer Reschudul", "Ask Later"]
+      },
+      {
+        q: "Robi WiFi Plus (T300 SE / K10) রাউটারে নির্দিষ্ট ওয়েবসাইট ব্লক করতে কোন ফিচার ব্যবহার করা হয়?",
+        options: ["Smart Restart", "SMS Center", "Parental Control / URL Filter", "WPS Mode"]
+      },
+      {
+        q: "রাউটারের সিগন্যাল সবচেয়ে ভালো পাওয়ার জন্য রাউটারটি কোথায় রাখা উচিত?",
+        options: ["ঘরের এক কোণায় মেঝেতে", "খোলা জায়গায় ও জানালার পাশে উঁচু স্থানে", "আলমারির ভেতরে", "টিভি বা ফ্রিজের পেছনে"]
+      },
+      {
+        q: "SR ID স্ট্যাটাস 'Customer Reschudul' দিলে নিচের কোন তথ্যটি দেওয়া বাধ্যতামূলক?",
+        options: ["Next Date", "Router MAC", "NID Number", "Alternative Email"]
+      }
+    ];
+
+    let currentQuizIndex = 0;
+    let selectedAnswers = [];
+    let currentSelectedText = null;
+
+    function openQuizPage() {
+      navigateTo('quizPage');
+      if (!currentUser || !currentUser.idNumber) return;
+
+      const targetId = String(currentUser.idNumber).trim().toLowerCase();
+      if (cachedQuizMap[targetId]) {
+        showQuizCompletedUI(cachedQuizMap[targetId]);
+      } else {
+        startQuiz();
+      }
+      syncAllData(false);
+    }
+
+    function startQuiz() {
+      currentQuizIndex = 0;
+      selectedAnswers = [];
+      currentSelectedText = null;
+      document.getElementById('quizContent').classList.remove('hidden');
+      document.getElementById('quizResultBox').classList.add('hidden');
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      currentSelectedText = null;
+      const item = robiWifiQuizzes[currentQuizIndex];
+      document.getElementById('quizProgressBadge').innerText = `${currentQuizIndex + 1} / ${robiWifiQuizzes.length}`;
+      document.getElementById('quizQuestion').innerText = item.q;
+
+      const nextBtn = document.getElementById('nextQuizBtn');
+      nextBtn.classList.add('hidden');
+
+      if (currentQuizIndex === robiWifiQuizzes.length - 1) {
+        nextBtn.innerHTML = 'Submit Quiz <i class="fa-solid fa-paper-plane ml-1"></i>';
+      } else {
+        nextBtn.innerHTML = 'পরবর্তী প্রশ্ন <i class="fa-solid fa-arrow-right ml-1"></i>';
+      }
+
+      const optionsBox = document.getElementById('quizOptions');
+      optionsBox.innerHTML = item.options.map((opt, idx) => `
+        <button onclick="selectQuizOption(${idx})" id="quizOpt-${idx}" class="quiz-opt-btn w-full text-left p-3 border rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+          ${opt}
+        </button>
+      `).join('');
+    }
+
+    function selectQuizOption(selectedIndex) {
+      const item = robiWifiQuizzes[currentQuizIndex];
+      currentSelectedText = item.options[selectedIndex];
+
+      document.querySelectorAll('.quiz-opt-btn').forEach(btn => {
+        btn.classList.remove('bg-red-50', 'border-red-500', 'text-red-700', 'font-bold');
+      });
+
+      const selectedBtn = document.getElementById(`quizOpt-${selectedIndex}`);
+      selectedBtn.classList.add('bg-red-50', 'border-red-500', 'text-red-700', 'font-bold');
+
+      document.getElementById('nextQuizBtn').classList.remove('hidden');
+    }
+
+    function nextQuizQuestion() {
+      if (!currentSelectedText) return;
+      selectedAnswers.push(currentSelectedText);
+
+      if (currentQuizIndex < robiWifiQuizzes.length - 1) {
+        currentQuizIndex++;
+        renderQuizQuestion();
+      } else {
+        const targetId = String(currentUser.idNumber).trim().toLowerCase();
+        cachedQuizMap[targetId] = selectedAnswers;
+        localStorage.setItem('robi_cache_quiz', JSON.stringify(cachedQuizMap));
+
+        showQuizCompletedUI(selectedAnswers);
+        showToast('Quiz Submitted to Sheet3!');
+
+        fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            type: 'quiz',
+            idNumber: currentUser.idNumber,
+            answers: selectedAnswers
+          })
+        });
+      }
+    }
+
+    function showQuizCompletedUI(answers) {
+      document.getElementById('quizContent').classList.add('hidden');
+      document.getElementById('quizResultBox').classList.remove('hidden');
+      document.getElementById('quizProgressBadge').innerText = 'Submitted';
+      document.getElementById('quizScoreText').innerText = `ID Number (${currentUser.idNumber}) এর উত্তরগুলো Sheet3-তে জমা হয়েছে। আপনি আর পুনরায় সাবমিট করতে পারবেন না।`;
+
+      const preview = document.getElementById('submittedAnswersPreview');
+      if (answers && answers.length > 0) {
+        preview.innerHTML = `<div class="font-bold text-gray-800 border-b pb-1 mb-1">আপনার সাবমিট করা উত্তরসমূহ:</div>` +
+          answers.map((ans, idx) => `<div><strong>প্রশ্ন ${idx + 1}:</strong> ${ans}</div>`).join('');
+      } else {
+        preview.innerHTML = '';
+      }
+    }
+
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      if (!currentUser) return alert('Please login again.');
+
+      const oldPass = document.getElementById('oldPassword').value.trim();
+      const newPass = document.getElementById('newPassword').value.trim();
+      const confirmPass = document.getElementById('confirmNewPassword').value.trim();
+
+      if (newPass !== confirmPass) {
+        return alert('New Password এবং Confirm New Password মিলছে না!');
+      }
+
+      const btn = document.getElementById('changePassBtn');
+      btn.innerText = 'Updating...';
+
+      try {
+        const reqUrl = `${WEB_APP_URL}?action=changePassword&idNumber=${encodeURIComponent(currentUser.idNumber)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`;
+        const res = await fetch(reqUrl, { method: 'GET', redirect: 'follow' });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          currentUser.password = newPass;
+          localStorage.setItem('robi_user', JSON.stringify(currentUser));
+          showToast(data.message);
+          document.getElementById('oldPassword').value = '';
+          document.getElementById('newPassword').value = '';
+          document.getElementById('confirmNewPassword').value = '';
+          navigateTo('settingPage');
+        } else {
+          alert(data.message || 'Password update failed!');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.innerText = 'Update Password';
+      }
+    }
+
+    function toggleNewDateField() {
+      const val = document.getElementById('statusSelect').value;
+      const group = document.getElementById('newDateFieldGroup');
+      if (val === 'Customer Reschudul') {
+        group.classList.remove('hidden-page');
+        document.getElementById('newDate').required = true;
+      } else {
+        group.classList.add('hidden-page');
+        document.getElementById('newDate').required = false;
+      }
+    }
+
+    function handleComplineSubmit(e) {
+      e.preventDefault();
+      if (!currentUser) return alert('Please login again.');
+
+      const srId = document.getElementById('srId').value.trim();
+      const status = document.getElementById('statusSelect').value;
+      const newDate = document.getElementById('newDate').value;
+      const comment = document.getElementById('comment').value.trim();
+
+      const nowStr = new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+      const todayKey = getTodayDateKey();
+
+      const newEntry = {
+        dateTime: nowStr,
+        dateKey: todayKey,
+        idNumber: currentUser.idNumber,
+        bdoName: currentUser.bdoName || '',
+        srId: srId,
+        status: status,
+        nextDate: status === 'Customer Reschudul' ? newDate : '',
+        comment: comment,
+        supervisor: currentUser.supervisor || ''
+      };
+      cachedReports.unshift(newEntry);
+      localStorage.setItem('robi_cache_reports', JSON.stringify(cachedReports));
+
+      document.getElementById('srId').value = '';
+      document.getElementById('statusSelect').value = '';
+      document.getElementById('comment').value = '';
+      document.getElementById('newDate').value = '';
+      toggleNewDateField();
+      navigateTo('homePage');
+      showToast('Report Submitted Successfully!');
+
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'report',
+          idNumber: currentUser.idNumber,
+          srId: srId,
+          status: status,
+          newDate: status === 'Customer Reschudul' ? newDate : '',
+          comment: comment,
+          supervisor: currentUser.supervisor || ''
+        })
+      });
+    }
+
+    function renderMyReportsFromCache() {
+      if (!currentUser) return;
+      const container = document.getElementById('reportList');
+      const targetId = String(currentUser.idNumber).trim().toLowerCase();
+      const todayKey = getTodayDateKey();
+
+      const dateLabel = document.getElementById('todayDateLabel');
+      if (dateLabel) dateLabel.innerText = 'Date: ' + todayKey;
+
+      const todayList = cachedReports.filter(r => {
+        const matchId = String(r.idNumber || '').trim().toLowerCase() === targetId;
+        if (!matchId) return false;
+        if (r.dateKey) return r.dateKey === todayKey;
+        if (r.dateTime) {
+          const parsed = new Date(r.dateTime);
+          if (!isNaN(parsed.getTime())) {
+            const k = `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+            return k === todayKey;
+          }
+        }
+        return false;
+      });
+
+      if (todayList.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-6">আজকের কোনো রিপোর্ট পাওয়া যায়নি।</p>';
+        return;
+      }
+
+      container.innerHTML = todayList.map(r => `
+        <div class="border rounded-lg p-3 bg-gray-50 space-y-1.5 shadow-sm">
+          <div class="flex justify-between items-center font-bold text-gray-800">
+            <span>SR ID: ${r.srId}</span>
+            <span class="text-xs px-2 py-0.5 rounded ${r.status === 'Cancel' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">${r.status}</span>
+          </div>
+          <div class="text-xs text-amber-700 font-medium"><i class="fa-solid fa-calendar-days mr-1"></i> Next Date: ${r.nextDate || 'N/A'}</div>
+          <div class="text-xs text-gray-600"><strong>Comment:</strong> ${r.comment}</div>
+          <div class="text-xs text-gray-500"><strong>Supervisor:</strong> ${r.supervisor}</div>
+          <div class="text-[10px] text-gray-400 text-right border-t pt-1 mt-1"><i class="fa-regular fa-clock mr-1"></i> ${r.dateTime}</div>
+        </div>
+      `).join('');
+    }
+
+    function openProfileModal() { document.getElementById('profileModal').classList.remove('hidden-page'); }
+    function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden-page'); }
+
+    function openMyReportsFromSetting() {
+      navigateTo('myReportPage');
+      renderMyReportsFromCache();
+      syncAllData(false);
+    }
+
+    function logout() {
+      localStorage.removeItem('robi_user');
+      currentUser = null;
+      closeProfileModal();
+      document.getElementById('mainHeader').classList.add('hidden-page');
+      document.getElementById('bottomNav').classList.add('hidden-page');
+      navigateTo('loginPage');
+    }
+  </script>
+</body>
+</html>

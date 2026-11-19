@@ -1,0 +1,6 @@
+{
+  "name": "Robi WiFi",
+  "description": "Robi WiFi field operations app for BDO login, complain reporting, live SR search, bind issue tracking, quiz, and A4 PDF invoice generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Robi WiFi</string>
+    <string name="login_title">Robi WiFi Login</string>
+    <string name="fast_mode_ready">Fast Mode Ready</string>
+    <string name="label_number">Number</string>
+    <string name="hint_number">018xxxxxxxx</string>
+    <string name="label_password">Password</string>
+    <string name="action_login">Login</string>
+    <string name="action_logging_in">Logging in…</string>
+    <string name="main_menu">Main Menu</string>
+    <string name="menu_accesscon">accesscon</string>
+    <string name="menu_compline_report">Compline Report</string>
+    <string name="menu_update_iso">Update ISO File</string>
+    <string name="menu_bind_issue">Bind Issue</string>
+    <string name="menu_create_invoice">Create Invoice</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_quiz">Quiz</string>
+    <string name="nav_setting">Setting</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_profile_avatar">User Profile</string>
+    <string name="cd_upload_photo">Upload Profile Photo</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_sync">Sync Data</string>
+    <string name="cd_toggle_password">Toggle Password Visibility</string>
+    <string name="cd_invoice_qr">YouTube Channel QR Code</string>
+    <string name="cd_robi_emblem">Robi WiFi Emblem</string>
+    <string name="download_invoice_pdf">Download Invoice PDF</string>
+    <string name="share_invoice_pdf">Share PDF</string>
+    <string name="settings_title">Settings</string>
+    <string name="my_report_today">My Report (Today)</string>
+    <string name="change_password">Change Password</string>
+    <string name="logout">Logout</string>
+</resources>
